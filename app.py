@@ -52,8 +52,9 @@ def db_insert(ijid, t, p, h):
             p,
             h
         ))
+    db.commit()
     db.close()
 
+db_init()
 if __name__ == '__main__':
-    db_init()
     app.run()
