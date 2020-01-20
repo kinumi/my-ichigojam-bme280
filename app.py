@@ -1,8 +1,11 @@
 #coding: utf-8
 
+import os
 import time
 import sqlite3
 from flask import Flask, request
+import ambient
+
 from .bme280 import BME280
 
 app = Flask(__name__)
@@ -13,7 +16,6 @@ def view():
 
 @app.route('/', methods=["POST"])
 def post():
-    bme280 = BME280()
     post_data = request.get_data().splitlines()
     post_data = list(map(lambda x: int(x), post_data))
     ijid = post_data[0]
@@ -23,6 +25,8 @@ def post():
     bme280.setCalib(calib)
     bme280.setData(data)
     db_insert(ijid, bme280.T, bme280.P, bme280.H)
+    am = ambient.Ambient(os.environ('AM_CHANNEL'), os.environ('AM_WRITE_KEY'))
+    am.send({'d1': bme280.T, 'd2': bme280.P, 'd3': bme280.H})
     print("T: %0.2f, P: %0.2f, H: %0.2f" % (bme280.T, bme280.P, bme280.H))
     return 'ok'
 
