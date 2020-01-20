@@ -25,7 +25,7 @@ def post():
     bme280.setCalib(calib)
     bme280.setData(data)
     db_insert(ijid, bme280.T, bme280.P, bme280.H)
-    am = ambient.Ambient(os.environ('AM_CHANNEL'), os.environ('AM_WRITE_KEY'))
+    am = ambient.Ambient(os.environ['AM_CHANNEL'], os.environ['AM_WRITE_KEY'])
     am.send({'d1': bme280.T, 'd2': bme280.P, 'd3': bme280.H})
     print("T: %0.2f, P: %0.2f, H: %0.2f" % (bme280.T, bme280.P, bme280.H))
     return 'ok'
