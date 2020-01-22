@@ -25,10 +25,10 @@ def bme280():
     bm = BME280()
     bm.setCalib(calib)
     bm.setData(data)
+    print("channel: %s, T: %0.2f, P: %0.2f, H: %0.2f" % (channel, bm.T, bm.P, bm.H))
     db_insert(channel, bm.T, bm.P, bm.H)
     am = ambient.Ambient(channel, writekey)
     am.send({'d1': bm.T, 'd2': bm.P, 'd3': bm.H})
-    print("channel: %s, T: %0.2f, P: %0.2f, H: %0.2f" % (channel, bm.T, bm.P, bm.H))
     return 'ok'
 
 @app.route('/', methods=["POST"])
@@ -41,10 +41,10 @@ def post():
     bme280 = BME280()
     bme280.setCalib(calib)
     bme280.setData(data)
+    print("T: %0.2f, P: %0.2f, H: %0.2f" % (bme280.T, bme280.P, bme280.H))
     db_insert2(ijid, bme280.T, bme280.P, bme280.H)
     am = ambient.Ambient(os.environ['AM_CHANNEL'], os.environ['AM_WRITE_KEY'])
     am.send({'d1': bme280.T, 'd2': bme280.P, 'd3': bme280.H})
-    print("T: %0.2f, P: %0.2f, H: %0.2f" % (bme280.T, bme280.P, bme280.H))
     return 'ok'
 
 def db_init():
