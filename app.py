@@ -22,13 +22,13 @@ def bme280():
     post_data = list(map(lambda x: int(x), post_data[2:]))
     calib = post_data[0:32]
     data = post_data[32:32+8]
-    bme280 = BME280()
-    bme280.setCalib(calib)
-    bme280.setData(data)
-    db_insert(channel, bme280.T, bme280.P, bme280.H)
+    bm = BME280()
+    bm.setCalib(calib)
+    bm.setData(data)
+    db_insert(channel, bm.T, bm.P, bm.H)
     am = ambient.Ambient(channel, writekey)
-    am.send({'d1': bme280.T, 'd2': bme280.P, 'd3': bme280.H})
-    print("channel: %s, T: %0.2f, P: %0.2f, H: %0.2f" % (channel, bme280.T, bme280.P, bme280.H))
+    am.send({'d1': bm.T, 'd2': bm.P, 'd3': bm.H})
+    print("channel: %s, T: %0.2f, P: %0.2f, H: %0.2f" % (channel, bm.T, bm.P, bm.H))
     return 'ok'
 
 @app.route('/', methods=["POST"])
