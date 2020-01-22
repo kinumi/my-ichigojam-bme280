@@ -14,6 +14,23 @@ app = Flask(__name__)
 def view():
     return "ok"
 
+@app.route('/bme280', methods=["POST"])
+def bme280():
+    post_data = request.get_data().splitlines()
+    post_data = list(map(lambda x: int(x), post_data))
+    channel = post_data[0]
+    writekey = post_data[1]
+    calib = post_data[2:2+32]
+    data = post_data[2+32:2+32+8]
+    bme280 = BME280()
+    bme280.setCalib(calib)
+    bme280.setData(data)
+    db_insert(channel, bme280.T, bme280.P, bme280.H)
+    am = ambient.Ambient(channel, writekey)
+    am.send({'d1': bme280.T, 'd2': bme280.P, 'd3': bme280.H})
+    print("channel: %s, T: %0.2f, P: %0.2f, H: %0.2f" % (channel, bme280.T, bme280.P, bme280.H))
+    return 'ok'
+
 @app.route('/', methods=["POST"])
 def post():
     post_data = request.get_data().splitlines()
@@ -24,7 +41,7 @@ def post():
     bme280 = BME280()
     bme280.setCalib(calib)
     bme280.setData(data)
-    db_insert(ijid, bme280.T, bme280.P, bme280.H)
+    db_insert2(ijid, bme280.T, bme280.P, bme280.H)
     am = ambient.Ambient(os.environ['AM_CHANNEL'], os.environ['AM_WRITE_KEY'])
     am.send({'d1': bme280.T, 'd2': bme280.P, 'd3': bme280.H})
     print("T: %0.2f, P: %0.2f, H: %0.2f" % (bme280.T, bme280.P, bme280.H))
@@ -41,11 +58,33 @@ def db_init():
             p numeric,
             h numeric
         );
+        CREATE TABLE IF NOT EXISTS t_bme280 (
+            id integer primary key,
+            channel varchar,
+            measured_at timestmap,
+            t numeric,
+            p numeric,
+            h numeric
+        );
     """
     db.execute(sql)
     db.close()
 
-def db_insert(ijid, t, p, h):
+def db_insert(channel, t, p, h):
+    db = sqlite3.connect('data.db')
+    db.execute(
+        "INSERT INTO t_bme280 (channel, measured_at, t, p, h) VALUES (?, ?, ?, ?, ?);",
+        (
+            channel,
+            time.time(),
+            t,
+            p,
+            h
+        ))
+    db.commit()
+    db.close()
+
+def db_insert2(ijid, t, p, h):
     db = sqlite3.connect('data.db')
     db.execute(
         "INSERT INTO t_log (ijid, measured_at, t, p, h) VALUES (?, ?, ?, ?, ?);",
