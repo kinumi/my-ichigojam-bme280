@@ -17,11 +17,11 @@ def view():
 @app.route('/bme280', methods=["POST"])
 def bme280():
     post_data = request.get_data().splitlines()
-    post_data = list(map(lambda x: int(x), post_data))
     channel = post_data[0]
     writekey = post_data[1]
-    calib = post_data[2:2+32]
-    data = post_data[2+32:2+32+8]
+    post_data = list(map(lambda x: int(x), post_data[2:]))
+    calib = post_data[0:32]
+    data = post_data[32:32+8]
     bme280 = BME280()
     bme280.setCalib(calib)
     bme280.setData(data)
