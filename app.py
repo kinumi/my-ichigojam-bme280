@@ -58,6 +58,9 @@ def db_init():
             p numeric,
             h numeric
         );
+    """
+    db.execute(sql)
+    sql = u"""
         CREATE TABLE IF NOT EXISTS t_bme280 (
             id integer primary key,
             channel varchar,
